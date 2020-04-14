@@ -1,0 +1,23 @@
+USE `classicmodels`;
+DROP procedure IF EXISTS `sp_classicmodels`;
+
+DELIMITER $$
+USE `classicmodels`$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_classicmodels`()
+BEGIN
+
+select o.orderNumber, o.orderDate, c.customerName, p.productName, p.productLine, o.status,
+case 
+	when datediff(requiredDate, shippedDate)<0 then "Late" else "Ontime" 
+end as Arrival
+from orders as o 
+	left join orderdetails as od on o.orderNumber=od.orderNumber 
+	left join products p on od.productCode=p.productCode
+	left join customers as c on o.customerNumber=c.customerNumber
+order by o.orderNumber ASC;
+
+END$$
+
+DELIMITER ;
+
