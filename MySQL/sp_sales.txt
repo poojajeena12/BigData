@@ -1,0 +1,33 @@
+USE `classicmodels`;
+DROP procedure IF EXISTS `sp_sales`;
+
+DELIMITER $$
+USE `classicmodels`$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_sales`()
+BEGIN
+
+with cte as (
+
+select o.orderNumber, o.orderDate, cus.customerName, p.productName, p.productLine,
+cus.salesRepEmployeeNumber as employeeNumber, (od.priceEach*p.buyPrice) as salesPrice, 
+cus.state, cus.country, o.status 
+from orders as o 
+	left join orderdetails as od on o.orderNumber=od.orderNumber 
+	left join products p on od.productCode=p.productCode
+	left join customers as cus on o.customerNumber=cus.customerNumber
+
+)
+
+select cte.orderNumber, cte.customerName, cte.productName, cte.productLine, 
+concat(employees.firstName, " ", employees.lastName) as employeeName, 
+cte.state, cte.country, cte.salesPrice 
+from cte
+	left join employees using (employeeNumber)
+where status="Shipped"
+order by orderNumber ASC;
+
+END$$
+
+DELIMITER ;
+
